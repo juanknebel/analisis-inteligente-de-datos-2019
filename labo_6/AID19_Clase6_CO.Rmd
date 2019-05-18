@@ -132,7 +132,7 @@ pertenecientes a tres ciudades respectivamente. Contamos con los datos de la sig
 
 H0: el color de cabello es homogéneo en las tres poblaciones/ciudades (para todo i y j P(X=xi|Y=Pobj)=P(X=xi).
 
-H1: el color de cabello no es homogéneo en todas las poblaciones (exite al menos algún par i y j tal que P(X=xi|Y=yj)!=P(X=xi)).
+H1: el color de cabello no es homogéneo en todas las poblaciones (exite al menos algún par i y j tal que P(X=xi|Y=Pobj)!=P(X=xi)).
 
 Contamos con los datos de la siguiente tabla:
 <br>
