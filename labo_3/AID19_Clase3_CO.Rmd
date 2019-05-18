@@ -1,0 +1,581 @@
+---
+title: "AID Clase 3"
+author: "Cecilia Oliva"
+date: "27 de abril de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+<br>
+<br>
+
+<center> <h1>Gráficos en R</h1> </center>
+
+<br>
+<br>
+
+### <span style="color:darkred">Instalación de paquetes necesarios</span>
+<br>
+```{r echo=TRUE}
+
+#options(repos = c(CRAN = "http://cran.rstudio.com"))
+
+#install.packages("aplpack") # permite hacer caritas de Chernov
+#install.packages("corrplot") # permite personalizar colores y estilos de fuente para graficos
+#install.packages("ggplot2") # permite realizar graficos con movimiento
+#install.packages("plotrix") # permite realizar graficos de torta con volumen
+#install.packages("rgl") # permite realizar graficos en 3D
+#install.packages("tcltk") # posee comandos de lenguaje de herramientas para la creacion de interfases graficas
+#install.packages("tcltk2") # posee comandos adicionales a tcltk
+#installed.packages() # muestra los paquetes que estan instalados en el dispositivo
+
+library(grDevices) # Equipos graficos y soporte para la base y la red de graficos
+library(tcltk)
+library(aplpack)
+library(corrplot)
+library(ggplot2)
+library(plotrix)
+#library(rgl)
+library(tcltk2)
+library(readxl)
+
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Diagrama circular</span>
+<br>
+```{r echo=TRUE}
+
+IMCinfantil<-read_excel("D:/MaestriaDataMining-DeptoCompu/AID/IMCinfantil.xlsx")
+View(IMCinfantil)
+#IMCinfantil <- read.csv2("C:/Users/ceci/Datos/IMCinfantil.csv") # importa la base IMCinfantil
+attach(IMCinfantil) # carga la base en la memoria activa
+
+frec.catpeso<-table(CatPeso) # construye la distribucion de frecuencias
+pie(frec.catpeso) # dibuja el diagrama circular
+pie(frec.catpeso, col=rainbow(25)) # cambia la gama de colores
+pie(frec.catpeso, col=rainbow(25),font=8) # cambia el tipo de letra
+pie(frec.catpeso, col=rainbow(25),font=8,cex=1.5) # cambia el tamaño de letra
+pie(frec.catpeso, col=rainbow(25),font=8,cex=1.5,radius=1) # cambia el tamaño de la torta
+pie(frec.catpeso, col=rainbow(25),font=8,cex=1.5,radius=1,border=F) # quita el borde
+pie(frec.catpeso, col=rainbow(25),font=8,cex=1.5,radius=1,border=F,main="Grafico de Torta") # pone nombre
+
+
+etiquetas<-c("Deficiente","Normal","Obeso","Con sobrepeso") # define etiquetas
+pct<-round(frec.catpeso/sum(frec.catpeso)*100) # calcula las frecuencias porcentuales
+etiquetas<-paste(etiquetas,pct) # agrega los porcentajes a las etiquetas 
+etiquetas<-paste(etiquetas,"%",sep="") # agrega el simbolo % a los porcentajes 
+pie(frec.catpeso,labels =etiquetas,col=heat.colors(4,alpha=1)) # otra manera de asignar una paleta de colores
+pie(frec.catpeso,labels =etiquetas,col=terrain.colors(4,alpha=1)) # otra manera de asignar una paleta de colores
+pie(frec.catpeso,labels =etiquetas,col=topo.colors(4,alpha=1)) # otra manera de asignar una paleta de colores
+pie(frec.catpeso,labels =etiquetas,col=cm.colors(4,alpha=1)) # otra manera de asignar una paleta de colores
+pie(frec.catpeso,labels =etiquetas,col=cm.colors(4,alpha=1),main="Diagrama circular con etiquetas")
+
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Diagrama circular con volumen, perspectiva y sombra</span>
+<br>
+```{r echo=TRUE}
+
+pie3D(frec.catpeso) # grafica una torta con volumen
+pie3D(frec.catpeso,labels=etiquetas)
+pie3D(frec.catpeso,labels=etiquetas,explode=0.1) # separa los sectores
+pie3D(frec.catpeso,labels=etiquetas,explode=0.1,labelcex=0.9) # cambia el tamaño de las etiquetas
+pie3D(frec.catpeso,labels=etiquetas,explode=0.1,labelcex=0.9,radius=1.5)
+pie3D(frec.catpeso,labels=etiquetas,explode=0.1,labelcex=0.9,radius=1.5,height=0.2) # cambia el alto de la torta
+pie3D(frec.catpeso,labels=etiquetas,explode=0.1,labelcex=0.9,radius=1.5,height=0.2,shade=0.6) # sombrea
+pie3D(frec.catpeso,labels=etiquetas,explode=0.1,labelcex=0.9,radius=1.5,height=0.2,shade=0.6,col=terrain.colors(4:8,alpha=1))
+
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Diagrama de barras - barras adyacentes</span>
+<br>
+```{r echo=TRUE}
+
+par(bg="mistyrose")
+barplot(table(CatPeso),main="Categorias de Peso",col="mediumpurple1") # hace un grafico de barras simple
+barplot(table(SEXO,CatPeso)) # hace un gr?fico de barras superpuesto
+barplot(table(SEXO,CatPeso)[,c(1,2,4,3)]) # cambia el orden de las barras
+barplot(table(SEXO,CatPeso)[,c(1,2,4,3)],col=rainbow(11),main="Categorias de Peso segun Sexo")
+legend("topright",cex=1,title="Sexo",c("F","M"),fill=rainbow(11),horiz=T) # asigna leyendas en posici?n horizontal
+tabla<-table(SEXO,CatPeso)
+barplot(tabla,main="Grafico de barras",horiz= TRUE,col=c("olivedrab1","springgreen1")) # hace un gr?fico de barras horizontales
+legend("topright",cex=0.5, title="Sexo",c("F","M"),
+       fill=c("olivedrab1","springgreen1"),horiz=F) # asigna leyendas en posici?n vertical
+barplot(tabla,main="Grafico de barras",beside=TRUE,col= c("tan1","mistyrose4")) # hace un grafico de barras adyacentes
+legend("topleft",cex=0.5,title="Sexo",c("F","M"), fill=c("tan1","mistyrose4"),horiz=F) # cambia la ubicacion de las leyendas
+
+```
+<br>
+<br>
+
+### <span style="color:darkred">Gráfico de mosaicos</span>
+<br>
+```{r echo=TRUE}
+
+tabla2=table(EDAD,CatPeso)
+par(bg="lightcyan")
+mosaicplot(tabla2) # hace un grafico de mosaicos simple
+mosaicplot(tabla2[,c(1,2,4,3)],col=terrain.colors(7:11),main="Grafico de Mosaicos",ylab="Categoria de Peso",xlab="Edad",
+           cex=0.8) # este grafico permite visualizar una tabla de contingencia
+
+
+```
+<br>
+<br>
+
+### <span style="color:darkred">Gráfico de bastones</span>
+<br>
+```{r echo=TRUE}
+
+Modelos<-2010:2016 # ingresa los modelos de los autos
+Ventas<-c(2,3,7,4,9,0,5) # ingresa las frecuencias de las ventas de cada modelo
+par(bg="snow2")
+plot(Modelos,Ventas) # grafica los puntos
+plot(Modelos,Ventas,type="h") # grafica bastones
+plot(Modelos,Ventas,type="h",lty="twodash") #cambia el estilo de la l?nea
+plot(Modelos,Ventas,type="h",lty="dotdash",lwd=4) # cambia el grosor
+plot(Modelos,Ventas,type="h",lty="solid",lwd=4,col=heat.colors(9)) # cambia el color
+title("Ventas mensuales de una Agencia Chevrolet")
+
+```
+<br>
+<br>
+
+### <span style="color:darkred">Bastones como segmentos</span>
+<br>
+```{r echo=TRUE}
+
+plot(Modelos,Ventas)
+segments(2010,0,2010,2) # agrega un segmento del punto (2010,0) al punto (2010,2)
+segments(2010,0,2010,2,lwd=3,lty="dashed",col=1) # estilo rayado
+segments(2011,0,2011,3,lwd=3,lty="dotted",col=2) # estilo punteado
+segments(2012,0,2012,7,lwd=3,lty="solid",col=3) # estilo s?lido
+segments(2013,0,2013,4,lwd=3,lty="dotdash",col=4) # alterna estilos punteado y rayado
+segments(2014,0,2014,9,lwd=3,lty="twodash",col=5) # estilo doble rayado
+segments(2016,0,2016,5,lwd=3,lty="longdash",col=6) # estilo rayado largo
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Diagramas de tallo hoja</span>
+<br>
+```{r echo=TRUE}
+### Diagrama de tallo hoja
+
+datos=PESO
+stem(datos,scale=0.5) # da un histograma en el que se pueden apreciar los valores
+stem(datos,scale=1) # cambia la escala
+
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Diagrama de dispersión en dos y tres variables</span>
+<br>
+```{r echo=TRUE}
+
+gorr<- read_excel("D:/MaestriaDataMining-DeptoCompu/AID/TP1/gorriones.xlsx")
+gorr<-as.data.frame(gorr)
+names(gorr)
+plot(gorr[,2],gorr[,3],pch=16,col=1,ylim=c(0,300),xlab="Largo total",ylab="Extensión alar y largo del pico y cabeza")
+points(gorr[,2],gorr[,4],pch=16,col=2)
+legend(160,150,c("Extensión alar","Largo del pico y cabeza"),cex=0.7,pch=16,col=c(1,2),box.lty=0)
+title("Pájaros")
+
+
+attach(IMCinfantil)
+base.ninios=data.frame(EDAD,PESO,TALLA,IMC,CC) # arma una sub-base con las variables num?ricas de IMCinfantil
+par(bg="white")
+pairs(base.ninios) # representa todos los diagramas de dispersion de a pares
+pairs(base.ninios,col=rainbow(dim(base.ninios)[2])) # cambia color
+
+
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Histograma</span>
+<br>
+```{r echo=TRUE}
+
+attach(IMCinfantil)
+
+par(bg="oldlace")
+hist(PESO) # grafica el histograma de los pesos de todos los niños 
+hist(PESO,col="maroon1") # rellena las barras con color
+hist(PESO,col="maroon1",density=18) # rellena las barras con rayas
+hist(PESO,col="maroon1",density=18,angle=70) # cambia la inclinacion del rayado
+hist(PESO,col="maroon1",density=18,border="blueviolet") # cambia el color de los bordes
+hist(PESO,col="maroon1",density=18,border="blueviolet",main="Histograma",ylab="Frecuencia")
+
+R=quantile(PESO,0.75)-quantile(PESO,0.25) # calcula el rango intercuartil
+n=length(PESO) # guarda la cantidad de observaciones
+h.FD=2*R*n^(-1/3) # sugerencia de Freedman-Diaconis para el ancho de clase
+h.Scott=3.39*sd(PESO)*n^(-1/3) # sugerencia de Scott para el ancho de clase
+primero=floor(min(PESO))-1 # guarda primer valor de la grilla
+ultimo=ceiling(max(PESO))+3 # guarda ultimo valor de la grilla
+grilla.FD=seq(primero,ultimo,h.FD) # defino primer valor de la grilla de Freedman Diaconis
+grilla.Scott=seq(primero,ultimo,h.Scott)# defino primer valor de la grilla de Scott
+
+hist(PESO,breaks=grilla.FD) # cambia el ancho de las columnas
+hist(PESO,breaks=grilla.FD,col=2:8,main="Histograma de Freedman-Diaconis",ylab="Frecuencia")
+hist(PESO,breaks=grilla.Scott,col=22:28,main="Histograma de Scott",ylab="Frecuencia")
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Polígono de frecuencias</span>
+<br>
+```{r echo=TRUE}
+
+a=length(grilla.FD)
+pto.medio=rep(0,a-1) # inicia un vector
+for (i in 1:length(grilla.FD)-1){
+  pto.medio[i]=(grilla.FD[i]+grilla.FD[i+1])/2} # calcula los puntos medios de los intervalos
+alt.dens=hist(PESO,breaks=grilla.FD,plot=F)$counts # calcula la altura correspondiente a cada punto medio
+par(bg="blanchedalmond")
+hist(PESO,breaks=grilla.FD,col=heat.colors(a-1,alpha=1),
+     main="Poligono de frecuencia usando Freedman-Diaconis",
+     ylab="Frecuencia")
+points(pto.medio,alt.dens,type="l",lwd=2) # superpone el poligono de frecuencias al histograma
+
+b=length(grilla.Scott)
+pto.medio=rep(0,b-1)
+for (i in 1:length(grilla.Scott)-1)
+  pto.medio[i]=(grilla.Scott[i]+grilla.Scott[i+1])/2
+alt.dens=hist(PESO,breaks=grilla.Scott,plot=F)$counts
+par(bg="blanchedalmond")
+hist(PESO,breaks=grilla.Scott,col=heat.colors(b-1,alpha=1),main="Poligono de frecuencia usando Scott",ylab="Frecuencia")
+points(pto.medio,alt.dens,type="l",lwd=2)
+
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Función de densidad </span>
+<br>
+```{r echo=TRUE}
+
+par(bg="white")
+dens=density(PESO) # Kernel density estimation, es una manera no param?trica de estimar la funci?n de densidad de una variable aleatoria
+plot(dens,main="Densidad de Peso",xlab="Peso",ylab="Densidad") # grafica la estimaci?n de la densidad de la variable PESO
+polygon(dens,lwd=2,col="khaki1",border="khaki4",main="Densidad de Peso") # cambia colores de relleno y borde
+
+hist(PESO,col=cm.colors(8,alpha=1),probability=T,breaks=grilla.Scott,main="Suavizado normal",ylab="Densidad") # histograma de densidad
+xfit=seq(min(PESO),max(PESO),length=40) # arma una grilla de valores de datos
+yfit=dnorm(xfit,mean=mean(PESO),sd=sd(PESO)) # realiza un suavizado normal de datos
+lines(xfit,yfit,col="dodgerblue",lwd=2) # superpone el suavizado al histograma
+
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Función de distribución empírica</span>
+<br>
+```{r echo=TRUE}
+par(mfrow=c(1,2)) # dividimos el area de graficos en dos columnas
+plot.ecdf(PESO,col="magenta",main="Peso",ylab="F(x)") # dibuja la funcion de distribucion empirica
+plot.ecdf(TALLA,col="chartreuse1",main="Talla",ylab="F(x)") 
+
+par(mfrow=c(1,1)) # unifica la pantalla de graficos
+n=length(PESO)
+plot(stepfun(1:(n-1),sort(PESO)),main="Funcion escalonada") # otra manera de definir y graficar la funcion acumulada
+plot(stepfun(1:(n-1),sort(PESO)),main="Funcion escalonada",col="coral",lwd=2,ylab="F(x)")
+
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Boxplot</span>
+<br>
+```{r echo=TRUE}
+
+muestra=c(14,18,24,26,35,39,43,45,56,62,68,92,198)
+Md=median(muestra)
+summary(muestra)
+Q1=quantile(muestra,0.25)
+Q3=quantile(muestra,0.75)
+DI=Q3-Q1
+Q3+1.5*DI
+Q1-1.5*DI
+Q3+3*DI
+Q1-3*DI
+
+attach(IMCinfantil)
+par(mfrow=c(1,2),oma=c(0,0,2,0)) # personaliza el espacio de grafico
+boxplot(PESO) # realiza un boxplot basico
+boxplot(PESO,horizontal=T) # realiza un boxplot horizontal
+mtext("Graficos de cajas basicos", outer = TRUE, cex = 1.5) # pone un titulo para ambos graficos
+par(mfrow=c(1,1),col.main="aquamarine4",adj=0) # cambia el color y la posicion del titulo
+boxplot(PESO,horizontal=T,boxcol=2) # colorea el borde de la caja
+boxplot(PESO,horizontal=T,col=3) # colorea el interior de la caja
+par(mfrow=c(1,1),col.main="aquamarine4",adj=1) # cambia el color y la posicion del titulo
+boxplot(PESO,horizontal=T,col="antiquewhite",boxcol="antiquewhite4",main="Distribucion del Peso")
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Boxplots paralelos</span>
+<br>
+```{r echo=TRUE}
+
+par(col.main="aquamarine3",adj=0.5)
+boxplot(CC~CatPeso) # hace un boxplot para cada categoria de peso
+boxplot(split(CC,CatPeso)) # idem anterior
+boxplot(CC~CatPeso,horizontal=T) # grafica horizontalmente
+IMCinfantil$CatPeso<-ordered(IMCinfantil$CatPeso,levels=c("D","N","SO","OB")) # cambia el orden de las cajas
+with(IMCinfantil,boxplot(CC~CatPeso)) # hace el boxplot con el orden cambiado
+with(IMCinfantil,boxplot(CC~CatPeso,boxcol=topo.colors(5),col=terrain.colors(5),main="Circunferencia de cintura segun peso"))
+
+par(col.main="black")
+boxplot(PESO~SEXO*CatPeso,data=IMCinfantil) # otra manera de relaizar un grafico de cajas
+boxplot(PESO~SEXO*CatPeso,data=IMCinfantil,notch=T) # cambia el estilo de las cajas
+boxplot(PESO~SEXO*CatPeso,data=IMCinfantil,notch=T,col=(c("gold","darkgreen")),
+        main="Pesos por categoria y sexo",cex.axis=0.7, xlab="Categorias")
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Gráficos de correlación</span>
+<br>
+```{r echo=TRUE}
+
+attach(IMCinfantil)
+base.ninios=data.frame(EDAD,PESO,TALLA,IMC,CC) # arma una sub-base con las variables numericas de IMCinfantil
+base.ninios$CC=max(base.ninios$CC)-base.ninios$CC # cambiamos una variable para que correlacione en forma negativa con las restantes
+M=cor(base.ninios) # calcula la matriz de correlacion de las variables de la base
+M
+cov(base.ninios)
+var(base.ninios)#idem anterior
+
+corrplot(M,method="circle") # representa la matriz de correlaciones mediante circulos
+corrplot(M,method="square") # representa la matriz de correlaciones mediante cuadrados
+corrplot(M,method="ellipse") # representa la matriz de correlaciones mediante elipses
+corrplot(M,method="number") # representa la matriz de correlaciones mediante numeros
+corrplot(M,method="shade") # representa la matriz de correlaciones mediante sombreandos
+corrplot(M,method="pie") # representa la matriz de correlaciones mediante graficos de torta
+corrplot(M,type="upper") # representa solo la parte superior de la matriz de correlacion
+corrplot(M,type="lower") # representa s?lo la parte inferior de la matriz de correlaci?n
+corrplot(M,method="ellipse",type="upper") # permite combinaciones de estilos
+corrplot.mixed(M) # representa la matriz de correlacion combinando circulos y numeros
+corrplot.mixed(M,lower="circle",upper="shade") # permite combinaciones de estilos por bloques
+
+par(mfrow=c(1,1))
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Gráficos de nivel</span>
+<br>
+```{r echo=TRUE}
+
+x=y=seq(-4*pi,4*pi,len=27)
+r=sqrt(outer(x^2,y^2,"+"))
+filled.contour(exp(-0.1*r),axes=FALSE) # grafica las curvas de nivel del cono dado porla funcion r
+filled.contour(exp(-0.1*r),frame.plot=FALSE,plot.axes={}) # pone referencias de colores
+
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Caritas de Chernoff</span>
+<br>
+```{r echo=TRUE}
+
+par(mfrow=c(1,1),adj=0)
+par(col.main="blue") # cambia el color de los textos
+galle=read_excel("D:/MaestriaDataMining-DeptoCompu/AID/galletitasCO.xlsx")
+
+galle.salad=galle[c(1:3,7,15:17),] # agrupa las galletitas saladas
+galle.dulce=galle[c(4:6,8:14),] # agrupa las galletitas dulces
+
+galle.salad.mat<-as.matrix(galle.salad[,2:6],nrow=7,ncol=5)
+mode(galle.salad.mat)<-"numeric"
+galle.dulce.mat<-as.matrix(galle.dulce[,2:6],nrow=10,ncol=5)
+mode(galle.dulce.mat)<-"numeric"
+rownames(galle.salad.mat)<-galle.salad$Marca
+rownames(galle.dulce.mat)<-galle.dulce$Marca
+
+faces(galle.salad.mat)# hace un grafico con las caras de Chernoff
+faces(galle.salad.mat,nrow.plot=3) # ajusta el alto de las caras
+faces(galle.salad.mat,ncol.plot=4) # acomoda la cantidad de caras por fila
+faces(galle.salad.mat,face.type=0) # grafica las caras sin color
+faces(galle.salad.mat,face.type=2) # cambia el estilo de cara
+faces(galle.salad.mat,labels=galle.salad$Marca) # etiqueta las caras 
+title("Caritas de Chernoff saladas") # ponemos titulo
+
+faces(galle.dulce.mat,nrow.plot=3,ncol.plot=5,face.type=2,labels=galle.dulce$Marca)
+title("Galletitas Dulces")
+
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Gráficos de estrellas</span>
+<br>
+```{r echo=TRUE}
+
+par(col.main="black",adj=0.5)
+stars(galle.salad.mat) # hace un grafico de estrellas
+stars(galle.salad.mat,full=T) # dibuja con volumen
+stars(galle.salad.mat,full=F) # dibuja en perspectiva
+stars(galle.salad.mat,radius=F) # omite aristas
+stars(galle.salad.mat,axes=T) # dibuja los ejes
+stars(galle.salad.mat,frame.plot=T) # recuadra el grafico 
+stars(galle.salad.mat,draw.segments=T) # cambia el estilo 
+stars(galle.salad.mat,col.lines=rainbow(15)) # cambia el color a las lineas
+stars(galle.salad.mat,cex=0.8,flip.labels=T) # cambia la posicion de las etiquetas
+stars(galle.salad.mat,cex=0.8,flip.labels=F,len=0.8) # cambia el tamaño de las estrellas
+stars(galle.salad.mat,cex=0.8,flip.labels=F,len=0.8,col.stars=terrain.colors(7)) # colorea los interiores de las estrellas
+stars(galle.salad.mat,cex=0.8,flip.labels=F,len=0.8,col.stars=terrain.colors(7),ncol=4,frame.plot=T,main="Galletitas saladas")
+
+stars(galle.dulce.mat,full=T,draw.segments=T,cex=0.9,len=0.8,ncol=4,frame.plot=T,main="Galletitas dulces")
+
+### mtcars
+cars=mtcars[1:9,]
+stars(cars,cex=0.7,col.stars=c("red","green","orange","gold","blue",
+                               "yellow", "pink","purple","cyan"))
+title("Grafico de Estrellas")
+
+
+par(mfrow=c(1,3))
+stars(galle.salad.mat,ncol=2,full=F) 
+stars(galle.salad.mat,ncol=2,axes=T)
+stars(galle.salad.mat,ncol=2,col.lines=rainbow(15))
+
+
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Tranformaciones por fila</span>
+<br>
+```{r echo=TRUE}
+
+recep<- read_excel("D:/MaestriaDataMining-DeptoCompu/AID/TP1/recepcionistas.xls")
+recep<-as.data.frame(recep)
+
+colnames(recep)<-c("candidatos","cordialidadJuez1","presenciaJuez1","idiomaJuez1","cordialidadJuez2","presenciaJuez2","idiomaJuez2")
+
+attach(recep)
+
+# Graficos de cajas para visualizar diferencias entre los jueces
+par(mfrow=c(1,1))
+boxplot(recep[,c(2,5)],horizontal=T,col=c("seagreen1","salmon"),main="Puntaje de cordialidad segun juez")
+boxplot(recep[,c(3,6)],horizontal=T,col=c("seagreen1","salmon"),main="Puntaje de presencia segun juez")
+boxplot(recep[,c(4,7)],horizontal=T,col=c("seagreen1","salmon"),main="Puntaje de idioma segun juez")
+
+#Rearmo una tabla que junte las características de ambos jueces identificando el juez en una nueva columna
+
+recep2<-recep
+colnames(recep2)<-NULL
+
+CaracJuez1<-cbind(recep2[,1:4],rep(1,nrow(recep2)))
+colnames(CaracJuez1)<-c("candidatos","cordialidad","presencia","idioma","juez")
+CaracJuez2<-cbind(recep2[,1],recep2[,5:7],rep(2,nrow(recep2)))
+colnames(CaracJuez2)<-c("candidatos","cordialidad","presencia","idioma","juez")
+
+recepUnion<-rbind(CaracJuez1,CaracJuez2)
+
+### Transformacion de datos por fila
+
+medias=apply(recepUnion[,2:4],1,mean)
+rangos=apply(recepUnion[,2:4],1,max)-apply(recepUnion[,2:4],1,min)
+
+
+rec.trans=(recepUnion[,2:4]-medias)/rangos
+# transforma los datos para obtener media 0 y desvio 1
+
+## Visualizacion de diferencias entre jueces
+boxplot(split(rec.trans$cordialidad,recepUnion$juez),horizontal=T,col=c("royalblue","navajowhite"),main="Puntaje de cordialidad segun juez")
+boxplot(split(rec.trans$presencia,recepUnion$juez),horizontal=T,col=c("royalblue","navajowhite"),main="Puntaje de presencia segun juez")
+boxplot(split(rec.trans$idioma,recepUnion$juez),horizontal=T,col=c("royalblue","navajowhite"),main="Puntaje de idioma segun juez")
+
+plot(1:12,rec.trans$cordialidad,type="o",col="red1",lwd=2,xlab="Candidatas",
+     ylim=c(-1,1),ylab="Puntuacion estandarizada",xlim=c(1,12))
+points(1:12,rec.trans$presencia,type="o",col="olivedrab1",lwd=2)
+points(1:12,rec.trans$idioma,type="o",col="turquoise1",lwd=2)
+title("Comparacion de perfiles")
+legend.text=c("Cordialidad","Presencia","Idioma")
+legend(10,1,legend.text,text.col=c("red1","olivedrab1","turquoise1"),
+       cex=0.7,text.width=1.5,box.lty=0,bty="n")
+
+```
+
+<br>
+<br>
+
+### <span style="color:darkred">Tranformaciones por columna</span>
+<br>
+```{r echo=TRUE}
+
+###primer objetivo: hacer comparables las variables
+galle=read_excel("D:/MaestriaDataMining-DeptoCompu/AID/galletitasCO.xlsx")
+
+galle.salad=galle[c(1:3,7,15:17),] # agrupa las galletitas saladas
+galle.dulce=galle[c(4:6,8:14),] # agrupa las galletitas dulces
+
+galle.salad.mat<-as.matrix(galle.salad[,2:6],nrow=7,ncol=5)
+mode(galle.salad.mat)<-"numeric"
+galle.dulce.mat<-as.matrix(galle.dulce[,2:6],nrow=10,ncol=5)
+mode(galle.dulce.mat)<-"numeric"
+rownames(galle.salad.mat)<-galle.salad$Marca
+rownames(galle.dulce.mat)<-galle.dulce$Marca
+
+gallet<-as.data.frame(galle[,2:6])
+
+gallett<-matrix(as.numeric(unlist(gallet)),nrow=dim(gallet)[1])
+# Calculo de media y desvio por columna
+medias=apply(gallett,2,mean)#ojo, a veces tira error si no es numerico, por eso uso gallett, en lugar de gallet
+desvios=apply(gallet,2,sd)
+
+marcas=dim(gallet)[1]
+variab=dim(gallet)[2]
+
+# Conversion en variables comparables
+med=matrix(rep(medias,marcas),byrow=T,nrow=marcas)
+des=matrix(rep(desvios,marcas),byrow=T,nrow=marcas)
+
+gall.tran=(gallett-med)/des
+
+# verificacion de la transformacion
+round(apply(gall.tran,2,mean),3)#0 0 0 0 0
+round(apply(gall.tran,2,sd),3)#1 1 1 1 1
+
+gall.trans<-as.data.frame(gall.tran)
+colnames(gall.trans)<-colnames(gallet)
+head(gall.trans)
+attach(gall.trans)
+
+nombres=c("Calorias","Carbohidratos","Proteinas","Grasas","Sodio")
+
+boxplot(gall.trans,col=terrain.colors(8),names=nombres,
+        cex.axis=0.6, ylab="",main="Valores nutricionales")
+
+
+```
