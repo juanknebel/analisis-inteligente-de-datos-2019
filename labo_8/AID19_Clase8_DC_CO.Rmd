@@ -1,0 +1,205 @@
+---
+title: "AID Clase 8"
+author: "Débora Chan - Cecilia Oliva"
+date: "15 de junio de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+<br>
+<br>
+
+<center> <h1>Comparación de Medias (caso univariado)</h1> </center>
+
+<br>
+```{r include=FALSE}
+#recordar instalar los paquetes si no están instalados aún
+library(ggplot2)
+library(stats)
+library(reshape2)
+library(car)
+#options(repos = c(CRAN = "http://cran.rstudio.com"))
+#install.packages("nortest")
+library(nortest)
+library(openintro) 
+```
+```{r echo=TRUE}
+#recordar instalar los paquetes si no están instalados aún
+#library(ggplot2)
+#library(stats)
+#library(reshape2)
+#library(car)
+#library(nortest)
+#library(openintro) 
+```
+<br>
+
+### <span style="color:darkred">Ejemplo 1: Muestras normales, independientes con misma varianza</span>
+<br>
+El dataset "births" del paquete openintro contiene información sobre 150 nacimientos junto con información de las madres. Se quiere determinar si existen evidencias significativas de que el peso (en libras) de los recién nacidos cuyas madres fuman difiere de aquellos cuyas madres no fuman. Se considerarán sólo los casos con peso no inferior a 5 libras (aprox. 2.27 kg) para analizar muestras normales.
+
+```{r echo=TRUE}
+data(births) 
+head(births,4)
+dim(births)
+births2<-births[which(births$weight>=5),]
+dim(births2)
+```
+<br>
+<h4>Test a plantear: H0 vs H1</h4>
+
+H0: las medias de los pesos de ambos grupos son iguales
+
+H1: las medias de los pesos de ambos grupos son distintas
+
+```{r echo=TRUE}
+#Estadístico observado:
+mean(births2[births2$smoke == "nonsmoker", "weight"]) - mean(births2[births2$smoke == "smoker", "weight"])
+```
+
+<br>
+<h4>Analizamos normalidad:</h4>
+
+
+```{r echo=TRUE}
+ggplot(births2, aes(x = weight)) + 
+geom_histogram(aes(y = ..density.., colour = smoke)) + 
+facet_grid(. ~ smoke) + theme_bw()
+
+qqnorm(births2[births2$smoke == "smoker", "weight"], xlab = "", ylab = "", main = "Pesos de Bebés de Fumadoras") 
+qqline(births2[births2$smoke == "smoker", "weight"])
+
+shapiro.test(births2[births2$smoke == "smoker","weight"])
+
+qqnorm(births2[births2$smoke == "nonsmoker", "weight"], xlab = "", ylab = "", main = "Pesos de Bebés de No Fumadoras") 
+qqline(births2[births2$smoke == "nonsmoker", "weight"])
+
+shapiro.test(births2[births2$smoke == "nonsmoker","weight"])
+```
+Los gráficos qqnorm muestran quantiles alineados a los quantiles de una distribución normal, y los tests de Shapiro-Wilk no encuentran evidencias significativas para rechazar que los datos proceden de poblaciones con distribución normal.
+
+<br>
+<h4>Analizamos igualdad de varianzas:</h4>
+
+
+```{r echo=TRUE}
+ggplot(births2) + geom_boxplot(aes(x = smoke, y = weight, colour = smoke)) + theme_bw()
+
+leveneTest(weight ~ smoke, data = births2)
+
+```
+Con los resultados obtenidos, no hay evidencia de diferencia de varianzas.
+
+Luego, se cumplen las tres condiciones: independencia, normalidad e igual varianza (homoscedasticidad u homogeneidad de varianza). Aplicamos entonces el test t:
+
+```{r echo=TRUE}
+t.test(x = births2[births2$smoke == "smoker", "weight"], y = births2[births2$smoke == "nonsmoker", "weight"], alternative = "two.sided", mu = 0, var.equal = TRUE, conf.level = 0.95)
+
+```
+Conclusión: no hay suficiente evidencia para rechazar que la media de pesos de bebés de mamás fumadoras es igual a la media de pesos de bebés de mamás no fumadoras. Notar que el intervalo de confianza contiene al 0, es decir, con un 95% de confianza la diferencia de medias cae en un intervalo con valores cercanos a 0.
+
+<br>
+
+### <span style="color:darkred">Ejemplo 2: Muestras apareadas (dependientes)</span>
+
+Un equipo de atletismo ha decidido contratar a un nuevo entrenador. Para decidir si al cabo de un año mantienen su contrato se selecciona aleatoriamente a 10 miembros del equipo y se cronometran sus tiempos en 100 metros lisos al inicio del año, al final del año se volverá a cronometrar a esos mismos 10 corredores. En vista de los datos obtenidos 
+¿Hay diferencia significativa entre el rendimiento de los corredores tras un año de entrenar con el nuevo instructor?
+Se trata de un caso de estudio en el que las mediciones se realizan sobre los mismos individuos bajo dos condiciones distintas, se trata de datos pareados.
+
+
+```{r echo=TRUE}
+datos <- data.frame(corredor = c(1:10), antes = c(12.9, 13.5, 12.8, 15.6, 17.2, 19.2, 12.6, 15.3, 14.4, 11.3), despues = c(12.7, 13.6, 12, 15.2, 16.8, 20, 12, 15.9, 16, 11.1)) 
+head(datos, 4)
+
+diferencia <- datos$antes - datos$despues 
+datos <- cbind(datos, diferencia) 
+head(datos, 4)
+
+t.test(x = datos$antes, y = datos$despues, alternative = "two.sided", mu = 0, paired = TRUE, conf.level = 0.95)
+
+```
+¿Qué conclusión obtenemos?
+
+<br>
+
+### <span style="color:darkred">Ejemplo 3: Tests no paramétricos de Mann Whitney Wilcoxon y de la Mediana para 2 muestras independientes</span>
+
+Se dispone de dos muestras, de las que no se conoce el tipo de distribución de las poblaciones de origen y cuyo tamaño es demasiado pequeño para determinar si siguen una distribución normal. 
+¿Existe una diferencia significativa entre poblaciones?
+
+
+```{r echo=TRUE}
+muestra1 <- c( 1.1, 3.4, 4.3, 2.1, 7.0 , 2.5 ) 
+muestra2 <- c( 7.0, 8.0, 3.0, 5.0, 6.2 , 4.4 )
+wilcox.test(x = muestra1, y = muestra2, alternative = "two.sided", mu = 0, paired = FALSE, conf.int = 0.95)
+
+```
+```{r echo=TRUE}
+#install.packages("RVAideMemoire")
+library(RVAideMemoire)
+mood.medtest(muestra2~muestra1)
+```
+¿Qué conclusión obtenemos?
+
+<br>
+
+### <span style="color:darkred">Ejemplo 4: ANOVA de 1 factor</span>
+
+Se desea analizar los datos de un experimento para estudiar el efecto del porcentaje de algodón sobre la resistencia a la tensión de una fibra sintética.
+
+```{r echo=TRUE}
+porcentaje<-c(rep(15,5),rep(20,5),rep(25,5),rep(30,5),rep(35,5))
+resistencia<-c(7,7,15,11,9,12,17,12,18,18,14,18,18,19,19,19,25,22,19,23,7,10,11,15,11)
+porcAlgodon <-data.frame(porcentaje,resistencia)
+attach(porcAlgodon)
+
+porcentaje.f=factor(porcentaje)
+
+plot(resistencia~porcentaje.f)# idem boxplot(resistencia~porcentaje.f)
+
+AOVporcAlgo<- aov(resistencia~porcentaje.f)
+summary(AOVporcAlgo)#idem usando anova(AOVporcAlgo)
+```
+
+Aplicando ANOVA el p-valor=9.13e-06 es <0.05, por lo tanto, si se verifican los supuestos de normalidad y homogeneidad de la varianza será válido decir que se rechaza que las medias de cada grupo son todas iguales entre sí, es decir, hay al menos un par que difieren, por lo tanto los porcentajes de algodon influyen sobre la resistencia.
+
+Veamos si se cumplen los supuestos necesarios para aplicar ANOVA.
+
+<br>
+<h4>Analizamos igualdad de varianzas:</h4>
+
+```{r echo=TRUE}
+bartlett.test(resistencia,porcentaje.f)
+
+leveneTest(resistencia~porcentaje.f)
+```
+<br>
+
+<h4>Analizamos normalidad:</h4>
+
+```{r echo=TRUE}
+shapiro.test(residuals(AOVporcAlgo))
+
+ad.test(residuals(AOVporcAlgo))
+
+library(moments)
+agostino.test(residuals(AOVporcAlgo))
+```
+
+```{r echo=TRUE}
+qqPlot(residuals(AOVporcAlgo),ylab = "residuos", col = "coral",pch = 19, col.lines = "cadetblue")
+```
+<br>
+
+Los intervalos de confianza simultáneos para las diferencias de medias 
+de Tukey resultan:
+
+```{r echo=TRUE}
+TukeyHSD(AOVporcAlgo,conf.level=0.95)
+```
+<br>
+
+¿Qué conclusión obtenemos?
+
