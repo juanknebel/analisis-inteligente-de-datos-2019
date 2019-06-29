@@ -12,12 +12,11 @@ library(ggplot2)
 library(stats)
 library(reshape2)
 library(car)
-options(repos = c(CRAN = "http://cran.rstudio.com"))
-install.packages("nortest")
+# options(repos = c(CRAN = "http://cran.rstudio.com"))
 library(nortest)
 install.packages("openintro")
 library(openintro)
-#?births
+?births
 data(births) 
 head(births,4)
 births2<-births[which(births$weight>=5),]
